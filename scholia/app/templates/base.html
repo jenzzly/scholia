@@ -26,16 +26,16 @@
  if ("{{ q }}" != "") {
 
      var url = 'https://www.wikidata.org/w/api.php?action=wbgetentities&ids=' +
-	       '{{ q }}' + 
+	       '{{ q }}' +
 	       '&format=json&callback=?';
-     
+
      $.getJSON(url, function (data) {
 	 var item = data.entities["{{ q }}"];
 	 if ('en' in item.labels) {
 	     $("#h1").text(item.labels.en.value);
 	 }
 	 $("#h1").append(' (<a href="https://www.wikidata.org/wiki/{{ q }}">{{ q }}</a>)');
-	 
+
 	 var detailsList = Array();
 	 try {
 	     var orcid = item.claims.P496[0].mainsnak.datavalue.value;
@@ -66,7 +66,7 @@
 	     $( '#details' ).append( detailsList.join( " | " ) );
 	 }
 	 catch(e) {}
-	 
+
 	 /* BioSchemas annotation */
 	 if (item.claims.P225) {
         try { /* Taxon */
@@ -152,39 +152,39 @@
 	    } catch(e) { console.log("Exception: " + e)
 	    }
 	 }
-	 
+
 	 /* English Wikipedia */
-	 if ('enwiki' in item.sitelinks) {
+	 if ('rwwiki' in item.sitelinks) {
 	     var title = item.sitelinks.enwiki.title;
-	     var wikipediaApiUrl = 'https://en.wikipedia.org/w/api.php?' +
-				   'action=query&prop=extracts&exsentences=3&exlimit=1&exintro=1&' + 
+	     var wikipediaApiUrl = 'https://rw.wikipedia.org/w/api.php?' +
+				   'action=query&prop=extracts&exsentences=3&exlimit=1&exintro=1&' +
 				   'explaintext=1&callback=?&format=json&titles=' +
 				   encodeURIComponent(title);
-	     var wikipediaUrl = 'https://en.wikipedia.org/wiki/' + encodeURIComponent(title)
-	     
+	     var wikipediaUrl = 'https://rw.wikipedia.org/wiki/' + encodeURIComponent(title)
+
 	     $.getJSON(wikipediaApiUrl, function(data) {
 		 var pages = data.query.pages;
 		 var text = pages[Object.keys(pages)[0]].extract + " ... "
-		 var html = "(from the <a href=\"" + wikipediaUrl + "\">English Wikipedia</a>)";
+		 var html = "(from the <a href=\"" + wikipediaUrl + "\">Kinyarwanda Wikipedia</a>)";
 		 $("#intro").text(text).append(html);
 	     }).fail(function(d, textStatus, error) {
 		 console.error("getJSON failed, status: " + textStatus + ", error: "+error)
 	     });
 	 }
 
-	 
+
 	 /* English Wikiversity */
 	 if ('enwikiversity' in item.sitelinks) {
 	     var enwikiversityTitle = item.sitelinks.enwikiversity.title;
 	     var wikiversityApiUrl = 'https://en.wikiversity.org/w/api.php?' +
-				     'action=query&prop=extracts&exsentences=3&exlimit=1&exintro=1&' + 
+				     'action=query&prop=extracts&exsentences=3&exlimit=1&exintro=1&' +
 				     'explaintext=1&callback=?&format=json&titles=' +
 				     encodeURIComponent(enwikiversityTitle);
 	     var wikiversityUrl = 'https://en.wikiversity.org/wiki/' + encodeURIComponent(enwikiversityTitle)
 
 	     $.getJSON(wikiversityApiUrl, function(data) {
 		 var pages = data.query.pages;
-		 var text = pages[Object.keys(pages)[0]].extract; 
+		 var text = pages[Object.keys(pages)[0]].extract;
 		 if (text) {
 		     var html = "... (from the <a href=\"" + wikiversityUrl + "\">English Wikiversity</a>)";
 		 }
@@ -201,33 +201,33 @@
 
      var endpointUrl = 'https://query.wikidata.org/sparql';
      var query = `
-    SELECT DISTINCT ?aspect 
+    SELECT DISTINCT ?aspect
     WHERE {
     { [] wdt:P50 wd:{{ q }} . BIND("author" AS ?aspect) }
-    UNION 
+    UNION
     { [] wdt:P166 wd:{{ q }} . BIND("award" AS ?aspect) }
-    UNION 
+    UNION
     { [] wdt:P17 wd:{{ q }} . BIND("country" AS ?aspect) }
     UNION
     { [] wdt:P972 wd:{{ q }} . BIND("catalogue" AS ?aspect) }
     UNION
-    { wd:{{ q }} wdt:P159? / wdt:P625 [] . BIND("location" AS ?aspect) } 
-    UNION 
+    { wd:{{ q }} wdt:P159? / wdt:P625 [] . BIND("location" AS ?aspect) }
+    UNION
     { [] wdt:P1416 | wdt:P108 wd:{{ q }} . BIND("organization" AS ?aspect) }
-    UNION 
+    UNION
     { [] wdt:P123 wd:{{ q }} . BIND("publisher" AS ?aspect) }
-    UNION 
+    UNION
     { [] wdt:P872 wd:{{ q }} . BIND("printer" AS ?aspect) }
-    UNION 
+    UNION
     { [] wdt:P179 wd:{{ q }} . BIND("series" AS ?aspect) }
-    UNION 
+    UNION
     { [] wdt:P859 wd:{{ q }} . BIND("sponsor" AS ?aspect) }
     UNION
     { [] wdt:P921 wd:{{ q }} . BIND("topic" AS ?aspect) }
     UNION
-    { [] wdt:P4510 wd:{{ q }} . BIND("use" AS ?aspect) } 
+    { [] wdt:P4510 wd:{{ q }} . BIND("use" AS ?aspect) }
     UNION
-    { [] wdt:P1433 wd:{{ q }} . BIND("venue" AS ?aspect) } 
+    { [] wdt:P1433 wd:{{ q }} . BIND("venue" AS ?aspect) }
     UNION
     { wd:{{ q }} wdt:P235 [] . BIND("chemical" AS ?aspect) }
     UNION
@@ -242,7 +242,7 @@
 	 headers: { Accept: 'application/sparql-results+json' },
 	 data: { query: query }
      };
-     
+
      $.ajax( endpointUrl, settings ).then( function ( data ) {
 	 data.results.bindings.forEach(function(entry) {
 	     var aspect = entry.aspect.value;
@@ -259,7 +259,7 @@
      $.ajax({
 	 url: wembedderUrl,
 	 success: function (data) {
-	     var html = `<hr><span data-toogle="tooltip" title="Related items from Wembedder knowledge graph embedding.">Related:</span> `; 
+	     var html = `<hr><span data-toogle="tooltip" title="Related items from Wembedder knowledge graph embedding.">Related:</span> `;
 	     $( '#wembedder' ).append(html);
 
 	     // Make list with results
@@ -310,8 +310,8 @@
           $("#searchresult").empty();
           $.each(data.search, function(i, item) {
             $("#searchresult")
-              .append("<div><a href='{{ url_for('app.index') }}" + item.title + "'>" + 
-                escapeHTML(item.label) + 
+              .append("<div><a href='{{ url_for('app.index') }}" + item.title + "'>" +
+                escapeHTML(item.label) +
                 "</a> - " + escapeHTML(item.description) + "</div>");
         });
       });
@@ -328,7 +328,7 @@
 	<li role="presentation"><a href="{{ url_for('app.show_author_empty') }}">Author</a></li>
 	<li role="presentation">
 	    <div class="dropdown">
-		<button class="btn btn-link dropdown-toggle" 
+		<button class="btn btn-link dropdown-toggle"
 			type="button" data-toggle="dropdown">Work
 		    <span class="caret"></span></button>
 		<ul class="dropdown-menu">
@@ -343,7 +343,7 @@
 	</li>
 	<li role="presentation">
 	    <div class="dropdown">
-		<button class="btn btn-link dropdown-toggle" 
+		<button class="btn btn-link dropdown-toggle"
 			type="button" data-toggle="dropdown">Organization
 		    <span class="caret"></span></button>
 		<ul class="dropdown-menu">
@@ -356,7 +356,7 @@
 	</li>
 	<li role="presentation">
 	    <div class="dropdown">
-		<button class="btn btn-link dropdown-toggle" 
+		<button class="btn btn-link dropdown-toggle"
 			type="button" data-toggle="dropdown">Location
 		    <span class="caret"></span></button>
 		<ul class="dropdown-menu">
@@ -367,7 +367,7 @@
 	</li>
 	<li role="presentation">
 	    <div class="dropdown">
-		<button class="btn btn-link dropdown-toggle" 
+		<button class="btn btn-link dropdown-toggle"
 			type="button" data-toggle="dropdown">Event
 		    <span class="caret"></span></button>
 		<ul class="dropdown-menu">
@@ -378,7 +378,7 @@
 	</li>
 	<li role="presentation">
 	    <div class="dropdown">
-		<button class="btn btn-link dropdown-toggle" 
+		<button class="btn btn-link dropdown-toggle"
 			type="button" data-toggle="dropdown">Project
 		    <span class="caret"></span></button>
 		<ul class="dropdown-menu">
@@ -390,7 +390,7 @@
 	<li role="presentation"><a href="{{ url_for('app.show_award_empty') }}">Award</a></li>
 	<li role="presentation">
 	    <div class="dropdown">
-		<button class="btn btn-link dropdown-toggle" 
+		<button class="btn btn-link dropdown-toggle"
 			type="button" data-toggle="dropdown">Topic
 		    <span class="caret"></span></button>
 		<ul class="dropdown-menu">
@@ -410,7 +410,7 @@
 	</li>
 	<li role="presentation">
 	    <div class="dropdown">
-		<button class="btn btn-link dropdown-toggle" 
+		<button class="btn btn-link dropdown-toggle"
 			type="button" data-toggle="dropdown">Tools
 		    <span class="caret"></span></button>
 		<ul class="dropdown-menu">
@@ -423,7 +423,7 @@
 
 	<li role="presentation">
 	    <div class="dropdown">
-		<button class="btn btn-link dropdown-toggle" 
+		<button class="btn btn-link dropdown-toggle"
 			type="button" data-toggle="dropdown">Help
 		    <span class="caret"></span></button>
 		<ul class="dropdown-menu">
@@ -432,7 +432,7 @@
 		</ul>
 	    </div>
 	</li>
-    
+
     </ul>
     {% block nav_search %}
     <div class='nav nav-search'>
@@ -458,7 +458,7 @@
 <div class="container">
     <hr>
     Data from <a href="https://www.wikidata.org">Wikidata</a> and
-    <a href="https://en.wikipedia.org">English Wikipedia</a>
+    <a href="https://en.wikipedia.org">Kinyarwanda Wikipedia</a>
     |
     Code from
     <a href="https://github.com/fnielsen/scholia">GitHub repository</a>
@@ -477,5 +477,5 @@
 {% endblock %}
 
 <script type="text/javascript">
-    
+
 </script>
